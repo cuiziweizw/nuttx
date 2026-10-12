@@ -847,48 +847,11 @@ int coredump_add_memory_region(FAR const void *ptr, size_t size,
 
   if (g_regions != NULL)
     {
-      region = (FAR struct memory_region_s *)g_regions;
-
-      while (region->start < region->end)
+      for (region = (FAR struct memory_region_s *)g_regions;
+           region->start < region->end; region++)
         {
-          if ((uintptr_t)ptr >= region->start &&
-              (uintptr_t)ptr + size < region->end)
-            {
-              /* Already watched */
-
-              return 0;
-            }
-          else if ((uintptr_t)ptr < region->start &&
-                   (uintptr_t)ptr + size >= region->end)
-            {
-              /* start out of region, end out of region */
-
-              region->start = (uintptr_t)ptr;
-              region->end = (uintptr_t)ptr + size;
-              return 0;
-            }
-          else if ((uintptr_t)ptr < region->start &&
-                   (uintptr_t)ptr + size >= region->start)
-            {
-              /* start out of region, end in region */
-
-              region->start = (uintptr_t)ptr;
-              return 0;
-            }
-          else if ((uintptr_t)ptr < region->end &&
-                   (uintptr_t)ptr + size >= region->end)
-            {
-              /* start in region, end out of region */
-
-              region->end = (uintptr_t)ptr + size;
-              return 0;
-            }
-
           count++;
-          region++;
         }
-
-      /* Need a new region */
     }
 
   region = lib_malloc(sizeof(struct memory_region_s) * (count + 1));
